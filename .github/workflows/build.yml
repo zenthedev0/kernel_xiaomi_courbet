@@ -1,10 +1,6 @@
 name: Android Kernel Build with Clang
 
 on:
-  push:
-    branches: [ A15-KSU ]
-  pull_request:
-    branches: [ A15-KSU ]
   workflow_dispatch:
 
 env:

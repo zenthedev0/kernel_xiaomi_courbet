@@ -73,14 +73,14 @@ jobs:
 
     - name: Archive artifacts
       run: |
-        mkdir -p artifacts
+        mkdir -p $KERNEL_DIR/artifacts
         cd $KERNEL_DIR/out/arch/$ARCH/boot
-        cp Image.gz ../../../artifacts/
-        cp dtb.img ../../../artifacts/
-        cp dtbo.img ../../../artifacts/
+        cp Image.gz $KERNEL_DIR/artifacts/
+        cp dtb.img $KERNEL_DIR/artifacts
+        cp dtbo.img $KERNEL_DIR/artifacts
         cd ../../..
-        cp out/.config artifacts/
-        cp out/System.map artifacts/
+        cp out/.config $KERNEL_DIR/artifacts
+        cp out/System.map $KERNEL_DIR/artifacts
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

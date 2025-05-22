@@ -1,0 +1,91 @@
+name: Android Kernel Build with Clang
+
+on:
+  push:
+    branches: [ A15-KSU ]
+  pull_request:
+    branches: [ A15-KSU ]
+  workflow_dispatch:
+
+env:
+  KERNEL_DIR: .  # Change if your kernel source is in a subdirectory
+  DEFCONFIG: courbet_defconfig
+  ARCH: arm64
+  JOBS: 4
+  LOCALVERSION: "-RedLabel"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        fetch-depth: 1
+        
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang \
+          llvm \
+          lld \
+          build-essential \
+          bc \
+          libncurses-dev \
+          bison \
+          flex \
+          libssl-dev \
+          libelf-dev \
+          gcc-aarch64-linux-gnu \
+          gcc-arm-linux-gnueabi
+
+    - name: Set build environment
+      run: |
+        echo "KBUILD_BUILD_USER=Giyokun07" >> $GITHUB_ENV
+        echo "KBUILD_BUILD_HOST=Dekstop" >> $GITHUB_ENV
+        echo "LOCALVERSION=$LOCALVERSION" >> $GITHUB_ENV
+        echo "Build environment set:"
+        echo "User: $KBUILD_BUILD_USER"
+        echo "Host: $KBUILD_BUILD_HOST"
+        echo "Local version: $LOCALVERSION"
+
+    - name: Configure kernel
+      run: |
+        cd $KERNEL_DIR
+        make CC=clang ARCH=$ARCH O=out V=1 EXTRAVERSION="" $DEFCONFIG
+
+    - name: Build kernel
+      run: |
+        cd $KERNEL_DIR
+        make CC=clang LLVM=1 ARCH=$ARCH O=out -j$JOBS \
+          HEADER_ARCH=$ARCH \
+          SUBARCH=$ARCH \
+          CXX=c++ \
+          AR=llvm-ar \
+          NM=llvm-nm \
+          OBJDUMP=llvm-objdump \
+          STRIP=llvm-strip \
+          READELF=llvm-readelf \
+          HOSTCXX=clang++ \
+          HOSTAR=llvm-ar \
+          LLVM_IAS=1 \
+          CROSS_COMPILE=aarch64-linux-gnu- \
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+          CLANG_TRIPLE=aarch64-linux-gnu-
+
+    - name: Archive artifacts
+      run: |
+        mkdir -p artifacts
+        cd $KERNEL_DIR/out/arch/$ARCH/boot
+        cp Image.gz-dtb ../../../artifacts/
+        cd ../../..
+        cp out/.config artifacts/
+        cp out/System.map artifacts/
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-build
+        path: $KERNEL_DIR/artifacts/

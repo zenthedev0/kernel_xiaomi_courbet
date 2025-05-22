@@ -75,7 +75,9 @@ jobs:
       run: |
         mkdir -p artifacts
         cd $KERNEL_DIR/out/arch/$ARCH/boot
-        cp Image.gz-dtb ../../../artifacts/
+        cp Image.gz ../../../artifacts/
+        cp dtb.img ../../../artifacts/
+        cp dtbo.img ../../../artifacts/
         cd ../../..
         cp out/.config artifacts/
         cp out/System.map artifacts/

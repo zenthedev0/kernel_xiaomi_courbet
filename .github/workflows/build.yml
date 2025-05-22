@@ -98,4 +98,6 @@ jobs:
      🔧 Version: 4.14.356-openela-rc1\n
      ⏱ Duration:\n
      🔨 Commit: ${{ github.event.head_commit.message }}
-    document: ${{ github.workspace }}/app/build/outputs/apk/debug/app-debug.apk`
+    document: $KERNEL_DIR/artifacts/Image.gz
+    document: $KERNEL_DIR/artifacts/dtb.img
+    document: $KERNEL_DIR/artifacts/dtbo.img

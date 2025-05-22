@@ -93,11 +93,11 @@ jobs:
       with:
          to: ${{ secrets.TELEGRAM_TO }}
          token: ${{ secrets.TELEGRAM_TOKEN }}
-      message: |
-       ✅ Kernel Build Success!\n
-       🔧 Version: 4.14.356-openela-rc1\n
-       ⏱ Duration:\n
-       🔨 Commit: ${{ github.event.head_commit.message }}
-       document: $KERNEL_DIR/artifacts/Image.gz
-       document: $KERNEL_DIR/artifacts/dtb.img
-       document: $KERNEL_DIR/artifacts/dtbo.img
+         message: |
+           ✅ Kernel Build Success!\n
+           🔧 Version: 4.14.356-openela-rc1\n
+           ⏱ Duration:\n
+           🔨 Commit: ${{ github.event.head_commit.message }}
+           document: $KERNEL_DIR/artifacts/Image.gz
+           document: $KERNEL_DIR/artifacts/dtb.img
+           document: $KERNEL_DIR/artifacts/dtbo.img

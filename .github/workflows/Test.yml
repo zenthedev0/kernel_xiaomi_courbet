@@ -1,0 +1,61 @@
+name: Android Kernel CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Needed to get commit history
+    
+    - name: Set up build environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev bc
+        
+    - name: Build kernel
+      run: |
+        # Add your kernel build commands here
+        # Example:
+        # export ARCH=arm64
+        # make defconfig
+        # make -j$(nproc)
+        echo "Kernel build would happen here"
+        
+        # For demo purposes, create a dummy artifact
+        mkdir -p output
+        echo "Kernel image" > output/Image
+        echo "Modules" > output/modules.tar.gz
+        
+    - name: Get build info
+      id: build-info
+      run: |
+        echo "BUILD_DATE=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+        echo "KERNEL_VERSION=$(grep '^VERSION =' Makefile | awk '{print $3}')" >> $GITHUB_OUTPUT || echo "KERNEL_VERSION=4.14.356-openela-rc1" >> $GITHUB_OUTPUT
+        echo "COMMIT=$(git log -1 --pretty=format:'%h')" >> $GITHUB_OUTPUT
+        echo "DURATION=$(( ( $(date +%s) - $(date -d "${{ github.workflow_run.created_at }}" +%s) ) / 60 )) minutes" >> $GITHUB_OUTPUT
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-build-${{ steps.build-info.outputs.BUILD_DATE }}
+        path: output/
+        
+    - name: Send Telegram notification
+      if: success()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          ✅ Kernel Build Success!
+          🔧 Version: ${{ steps.build-info.outputs.KERNEL_VERSION }}
+          🕒 Built at: ${{ steps.build-info.outputs.BUILD_DATE }}
+          ⏱ Duration: ${{ steps.build-info.outputs.DURATION }}
+          🔨 Commit: ${{ steps.build-info.outputs.COMMIT }}
+        parse_mode: markdown

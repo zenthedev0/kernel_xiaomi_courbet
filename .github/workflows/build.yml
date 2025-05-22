@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  KERNEL_DIR: .  # Change if your kernel source is in a subdirectory
+  KERNEL_DIR: /home/runner/work/kernel_xiaomi_courbet/kernel_xiaomi_courbet  # Change if your kernel source is in a subdirectory
   DEFCONFIG: courbet_defconfig
   ARCH: arm64
   JOBS: 4

@@ -76,8 +76,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: kernel-build-${{ steps.build-info.outputs.BUILD_DATE }}
-        path: out/arch/arm64/boot/
-        
+        path: out/arch/arm64/boot
+      
     - name: Send Telegram notification
       uses: appleboy/telegram-action@master
       with:

@@ -59,12 +59,18 @@ jobs:
         end_time=$(date +%s)
         duration=$((end_time - ${{ steps.timer.outputs.start_time }}))
         echo "duration_seconds=$duration" >> $GITHUB_OUTPUT
-    
+
     - name: Get kernel version
       id: kernel_version
       run: |
         VERSION=$(make kernelversion 2>/dev/null || echo "unknown")
         echo "kernel_version=$VERSION$LOCALVERSION" >> $GITHUB_OUTPUT
+
+    - name: Get current timestamp for filename
+      id: timestamp
+      run: |
+        echo "formatted_date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+        echo "formatted_time=$(date +'%H%M%S')" >> $GITHUB_OUTPUT
 
     - name: Find and package kernel files
       run: |
@@ -86,12 +92,6 @@ jobs:
       with:
         name: kernel-build
         path: A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip
-
-    - name: Get current timestamp for filename
-      id: timestamp
-      run: |
-        echo "formatted_date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-        echo "formatted_time=$(date +'%H%M%S')" >> $GITHUB_OUTPUT
 
     - name: Send Telegram notification
       if: success()

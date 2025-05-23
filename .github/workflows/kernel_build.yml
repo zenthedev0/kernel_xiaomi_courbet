@@ -74,13 +74,9 @@ jobs:
        # Verify the tarball exists
        ls -lh kernel_*.tar.gz
 
-
-    - name: Calculate build duration
-      id: duration
-      run: |
-        end_time=$(date +%s)
-        duration=$((end_time - ${{ steps.timer.outputs.start_time }}))
-        echo "duration=$duration" >> $GITHUB_OUTPUT
+    - name: Get current timestamp
+      id: date
+      run: echo "formatted_date=$(date +'%Y/%m/%d %H:%M')" >> $GITHUB_OUTPUT
 
     - name: Upload artifact (for GitHub)
       uses: actions/upload-artifact@v4
@@ -92,12 +88,12 @@ jobs:
       if: success()
       uses: appleboy/telegram-action@master
       with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-          ✅ Kernel Build Success!
-          🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
-          🕒 Built at: $(date +'%Y/%m/%d %H:%M')
-          ⏱ Duration: ${{ steps.duration.outputs.duration }} seconds
-          🔨 Commit: ${{ steps.commit.outputs.commit_short }}
-        document: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
+       to: ${{ secrets.TELEGRAM_TO }}
+       token: ${{ secrets.TELEGRAM_TOKEN }}
+       message: |
+        ✅ Kernel Build Success!
+        🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
+        🕒 Built at: ${{ steps.date.outputs.formatted_date }}
+        ⏱ Duration: ${{ steps.duration.outputs.duration }} seconds
+        🔨 Commit: ${{ steps.commit.outputs.commit_short }}
+    document: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz

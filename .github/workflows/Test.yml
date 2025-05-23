@@ -84,9 +84,10 @@ jobs:
       with:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: ✅ Kernel Build Success!
-                 🔧 Version: ${{ steps.build-info.outputs.KERNEL_VERSION }}
-                 🕒 Built at: ${{ steps.build-info.outputs.BUILD_DATE }}
-                 ⏱ Duration: ${{ steps.build-info.outputs.DURATION }}
-                 🔨 Commit: ${{ steps.build-info.outputs.COMMIT }}
+        message: |
+          ✅ Kernel Build Success!
+          🔧 Version: ${{ steps.build-info.outputs.KERNEL_VERSION }}
+          🕒 Built at: ${{ steps.build-info.outputs.BUILD_DATE }}
+          ⏱ Duration: ${{ steps.build-info.outputs.DURATION }}
+          🔨 Commit: ${{ steps.build-info.outputs.COMMIT }}
        document: ${{ steps.<step id>.outputs.outfile }}

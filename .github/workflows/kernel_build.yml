@@ -61,16 +61,19 @@ jobs:
 
     - name: Find and package kernel files
       run: |
-        # Navigate to the output directory (adjust path if needed)
-        cd out/arch/arm64/boot
-        # Create a directory for the release
-        mkdir -p kernel_release
-        # Copy the compiled files
-        cp Image.gz dtb.img dtbo.img kernel_release
-        # Package them
-        tar -czvf kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz kernel_release/
-        # Move the archive to the root directory
-        mv kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz ../../..
+       # Debug: List all relevant files
+       find out/ -type f \( -name "Image.gz" -o -name "dtb.img" -o -name "dtbo.img" \) -exec echo "Found: {}" \;
+
+       # Create release dir and copy files (update paths if needed)
+       mkdir -p kernel_release
+       cp out/arch/arm64/boot/Image.gz out/arch/arm64/boot/dtb.img out/arch/arm64/boot/dtbo.img kernel_release/ || true
+
+       # Create tarball
+       tar -czvf kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz kernel_release/
+
+       # Verify the tarball exists
+       ls -lh kernel_*.tar.gz
+
 
     - name: Calculate build duration
       id: duration

@@ -79,7 +79,7 @@ jobs:
        zip -r A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip kernel_release/
 
        # Verify the tarball exists
-       ls -lh kernel_*.tar.gz
+       ls -lh A15-KSU-courbet-*.zip
 
     - name: Upload artifact (for GitHub)
       uses: actions/upload-artifact@v4

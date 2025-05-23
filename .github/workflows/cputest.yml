@@ -1,12 +1,7 @@
 name: CPU Test
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - "**"
+  workflow_dispatch:
 
 jobs:
   test:

@@ -53,6 +53,13 @@ jobs:
                 CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                 CLANG_TRIPLE=aarch64-linux-gnu-
 
+    - name: Calculate build duration
+      id: duration
+      run: |
+        end_time=$(date +%s)
+        duration=$((end_time - ${{ steps.timer.outputs.start_time }}))
+        echo "duration_seconds=$duration" >> $GITHUB_OUTPUT
+    
     - name: Get kernel version
       id: kernel_version
       run: |
@@ -69,7 +76,7 @@ jobs:
        cp out/arch/arm64/boot/Image.gz out/arch/arm64/boot/dtb.img out/arch/arm64/boot/dtbo.img kernel_release/ || true
 
        # Create tarball
-       tar -czvf kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz kernel_release/
+       zip -r A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip kernel_release/
 
        # Verify the tarball exists
        ls -lh kernel_*.tar.gz
@@ -78,11 +85,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: kernel-build
-        path: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
+        path: A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip
 
-    - name: Get current timestamp
-      id: date
-      run: echo "formatted_date=$(date +'%Y/%m/%d %H:%M')" >> $GITHUB_OUTPUT
+    - name: Get current timestamp for filename
+      id: timestamp
+      run: |
+        echo "formatted_date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+        echo "formatted_time=$(date +'%H%M%S')" >> $GITHUB_OUTPUT
 
     - name: Send Telegram notification
       if: success()
@@ -94,6 +103,6 @@ jobs:
           ✅ Kernel Build Success!
           🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
           🕒 Built at: ${{ steps.date.outputs.formatted_date }}
-          ⏱ Duration: ${{ steps.duration.outputs.duration }} seconds
+          ⏱ Duration: ${{ steps.duration.outputs.duration_seconds }} seconds
           🔨 Commit: ${{ steps.commit.outputs.commit_short }}
-        document: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
+        document: A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip

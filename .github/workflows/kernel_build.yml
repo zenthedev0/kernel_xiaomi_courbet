@@ -1,0 +1,94 @@
+name: Kernel Build Workflow
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  KBUILD_BUILD_USER: Giyokun07
+  KBUILD_BUILD_HOST: Desktop
+  LOCALVERSION: "-RedLabel"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get commit hash
+      id: commit
+      run: echo "commit_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang llvm lld build-essential bc libncurses-dev bison flex libssl-dev libelf-dev
+
+    - name: Start build timer
+      id: timer
+      run: echo "start_time=$(date +%s)" >> $GITHUB_OUTPUT
+
+    - name: Build kernel
+      run: |
+        make CC=clang ARCH=arm64 O=out V=1 EXTRAVERSION="" courbet_defconfig
+        make CC=clang LLVM=1 ARCH=arm64 O=out -j16 \
+                HEADER_ARCH=arm64 \
+                SUBARCH=arm64 \
+                CXX=c++ \
+                AR=llvm-ar \
+                NM=llvm-nm \
+                OBJDUMP=llvm-objdump \
+                STRIP=llvm-strip \
+                READELF=llvm-readelf \
+                HOSTCXX=clang++ \
+                HOSTAR=llvm-ar \
+                LLVM_IAS=1 \
+                CROSS_COMPILE=aarch64-linux-gnu- \
+                CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+                CLANG_TRIPLE=aarch64-linux-gnu-
+
+    - name: Get kernel version
+      id: kernel_version
+      run: |
+        # This extracts the kernel version from the build output
+        # You might need to adjust this based on your actual build output
+        VERSION=$(make kernelversion)
+        echo "kernel_version=$VERSION$LOCALVERSION" >> $GITHUB_OUTPUT
+
+    - name: Calculate build duration
+      id: duration
+      run: |
+        end_time=$(date +%s)
+        duration=$((end_time - ${{ steps.timer.outputs.start_time }}))
+        echo "duration=$duration" >> $GITHUB_OUTPUT
+
+    - name: Package kernel
+      run: |
+        # Adjust this to package your kernel files appropriately
+        tar -czvf kernel_build_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz out/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-build
+        path: kernel_build_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
+
+    - name: Send Telegram notification
+      if: success()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          ✅ Kernel Build Success!
+          🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
+          🕒 Built at: $(date +'%Y/%m/%d %H:%M')
+          ⏱ Duration: ${{ steps.duration.outputs.duration }} seconds
+          🔨 Commit: ${{ steps.commit.outputs.commit_short }}
+        document: kernel_build_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz

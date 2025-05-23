@@ -79,7 +79,6 @@ jobs:
         path: out/arch/arm64/boot/
         
     - name: Send Telegram notification
-      if: success()
       uses: appleboy/telegram-action@master
       with:
         to: ${{ secrets.TELEGRAM_TO }}

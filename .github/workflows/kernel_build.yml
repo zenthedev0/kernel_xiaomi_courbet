@@ -37,7 +37,7 @@ jobs:
     - name: Build kernel
       run: |
         make CC=clang ARCH=arm64 O=out V=1 EXTRAVERSION="" courbet_defconfig
-        make CC=clang LLVM=1 ARCH=arm64 O=out -j16 \
+        make CC=clang LLVM=1 ARCH=arm64 O=out -j4 \
                 HEADER_ARCH=arm64 \
                 SUBARCH=arm64 \
                 CXX=c++ \

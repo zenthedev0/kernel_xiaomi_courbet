@@ -56,10 +56,21 @@ jobs:
     - name: Get kernel version
       id: kernel_version
       run: |
-        # This extracts the kernel version from the build output
-        # You might need to adjust this based on your actual build output
-        VERSION=$(make kernelversion)
+        VERSION=$(make kernelversion 2>/dev/null || echo "unknown")
         echo "kernel_version=$VERSION$LOCALVERSION" >> $GITHUB_OUTPUT
+
+    - name: Find and package kernel files
+      run: |
+        # Navigate to the output directory (adjust path if needed)
+        cd out/arch/arm64/boot
+        # Create a directory for the release
+        mkdir -p kernel_release
+        # Copy the compiled files
+        cp Image.gz dtb.img dtbo.img kernel_release
+        # Package them
+        tar -czvf kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz kernel_release/
+        # Move the archive to the root directory
+        mv kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz ../../..
 
     - name: Calculate build duration
       id: duration
@@ -68,16 +79,11 @@ jobs:
         duration=$((end_time - ${{ steps.timer.outputs.start_time }}))
         echo "duration=$duration" >> $GITHUB_OUTPUT
 
-    - name: Package kernel
-      run: |
-        # Adjust this to package your kernel files appropriately
-        tar -czvf kernel_build_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz out/
-
-    - name: Upload artifact
+    - name: Upload artifact (for GitHub)
       uses: actions/upload-artifact@v4
       with:
         name: kernel-build
-        path: kernel_build_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
+        path: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
 
     - name: Send Telegram notification
       if: success()
@@ -91,4 +97,4 @@ jobs:
           🕒 Built at: $(date +'%Y/%m/%d %H:%M')
           ⏱ Duration: ${{ steps.duration.outputs.duration }} seconds
           🔨 Commit: ${{ steps.commit.outputs.commit_short }}
-        document: kernel_build_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
+        document: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz

@@ -13,24 +13,56 @@ jobs:
       with:
         fetch-depth: 0  # Needed to get commit history
     
-    - name: Set up build environment
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev bc
-        
+        sudo apt-get install -y \
+          clang \
+          llvm \
+          lld \
+          build-essential \
+          bc \
+          libncurses-dev \
+          bison \
+          flex \
+          libssl-dev \
+          libelf-dev \
+          gcc-aarch64-linux-gnu \
+          gcc-arm-linux-gnueabi
+
+    - name: Set build environment
+      run: |
+        echo "KBUILD_BUILD_USER=Giyokun07" >> $GITHUB_ENV
+        echo "KBUILD_BUILD_HOST=Dekstop" >> $GITHUB_ENV
+        echo "LOCALVERSION=$LOCALVERSION" >> $GITHUB_ENV
+        echo "Build environment set:"
+        echo "User: $KBUILD_BUILD_USER"
+        echo "Host: $KBUILD_BUILD_HOST"
+        echo "Local version: $LOCALVERSION"
+
+    - name: Configure kernel
+      run: |
+        cd $KERNEL_DIR
+        make CC=clang ARCH=$ARCH O=out V=1 EXTRAVERSION="" $DEFCONFIG
+
     - name: Build kernel
       run: |
-        # Add your kernel build commands here
-        # Example:
-        # export ARCH=arm64
-        # make defconfig
-        # make -j$(nproc)
-        echo "Kernel build would happen here"
-        
-        # For demo purposes, create a dummy artifact
-        mkdir -p output
-        echo "Kernel image" > output/Image
-        echo "Modules" > output/modules.tar.gz
+        cd $KERNEL_DIR
+        make CC=clang LLVM=1 ARCH=$ARCH O=out -j$JOBS \
+          HEADER_ARCH=$ARCH \
+          SUBARCH=$ARCH \
+          CXX=c++ \
+          AR=llvm-ar \
+          NM=llvm-nm \
+          OBJDUMP=llvm-objdump \
+          STRIP=llvm-strip \
+          READELF=llvm-readelf \
+          HOSTCXX=clang++ \
+          HOSTAR=llvm-ar \
+          LLVM_IAS=1 \
+          CROSS_COMPILE=aarch64-linux-gnu- \
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+          CLANG_TRIPLE=aarch64-linux-gnu-
         
     - name: Get build info
       id: build-info
@@ -44,7 +76,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: kernel-build-${{ steps.build-info.outputs.BUILD_DATE }}
-        path: output/
+        path: out/arch/arm64/boot/
         
     - name: Send Telegram notification
       if: success()
@@ -52,10 +84,9 @@ jobs:
       with:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-          ✅ Kernel Build Success!
-          🔧 Version: ${{ steps.build-info.outputs.KERNEL_VERSION }}
-          🕒 Built at: ${{ steps.build-info.outputs.BUILD_DATE }}
-          ⏱ Duration: ${{ steps.build-info.outputs.DURATION }}
-          🔨 Commit: ${{ steps.build-info.outputs.COMMIT }}
-        parse_mode: markdown
+        message: ✅ Kernel Build Success!
+                 🔧 Version: ${{ steps.build-info.outputs.KERNEL_VERSION }}
+                 🕒 Built at: ${{ steps.build-info.outputs.BUILD_DATE }}
+                 ⏱ Duration: ${{ steps.build-info.outputs.DURATION }}
+                 🔨 Commit: ${{ steps.build-info.outputs.COMMIT }}
+       document: ${{ steps.<step id>.outputs.outfile }}

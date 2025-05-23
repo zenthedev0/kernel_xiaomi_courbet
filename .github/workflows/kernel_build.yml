@@ -74,26 +74,26 @@ jobs:
        # Verify the tarball exists
        ls -lh kernel_*.tar.gz
 
-    - name: Get current timestamp
-      id: date
-      run: echo "formatted_date=$(date +'%Y/%m/%d %H:%M')" >> $GITHUB_OUTPUT
-
     - name: Upload artifact (for GitHub)
       uses: actions/upload-artifact@v4
       with:
         name: kernel-build
         path: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
 
+    - name: Get current timestamp
+      id: date
+      run: echo "formatted_date=$(date +'%Y/%m/%d %H:%M')" >> $GITHUB_OUTPUT
+
     - name: Send Telegram notification
       if: success()
       uses: appleboy/telegram-action@master
       with:
-       to: ${{ secrets.TELEGRAM_TO }}
-       token: ${{ secrets.TELEGRAM_TOKEN }}
-       message: |
-        ✅ Kernel Build Success!
-        🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
-        🕒 Built at: ${{ steps.date.outputs.formatted_date }}
-        ⏱ Duration: ${{ steps.duration.outputs.duration }} seconds
-        🔨 Commit: ${{ steps.commit.outputs.commit_short }}
-    document: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          ✅ Kernel Build Success!
+          🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
+          🕒 Built at: ${{ steps.date.outputs.formatted_date }}
+          ⏱ Duration: ${{ steps.duration.outputs.duration }} seconds
+          🔨 Commit: ${{ steps.commit.outputs.commit_short }}
+        document: kernel_${{ steps.kernel_version.outputs.kernel_version }}.tar.gz

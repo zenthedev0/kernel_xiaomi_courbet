@@ -1,8 +1,6 @@
 name: Kernel Build Workflow
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 env:
@@ -74,7 +72,7 @@ jobs:
     - name: Find and package kernel files
       run: |
        # Debug: List all relevant files
-       find out/ -type f \( -name "Image.gz" -o -name "dtb.img" -o -name "dtbo.img" \) -exec echo "Found: {}" \;
+       find out/ -type f \( -name "Image.gz-dtb" -o -name "dtb.img" -o -name "dtbo.img" \) -exec echo "Found: {}" \;
 
        # Create release dir and copy files (update paths if needed)
        mkdir -p kernel_release

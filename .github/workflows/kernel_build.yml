@@ -8,7 +8,6 @@ on:
 env:
   KBUILD_BUILD_USER: Giyokun07
   KBUILD_BUILD_HOST: Desktop
-  LOCALVERSION: "-RedLabel"
 
 jobs:
   build:
@@ -36,7 +35,7 @@ jobs:
 
     - name: Build kernel
       run: |
-        make CC=clang ARCH=arm64 O=out V=1 EXTRAVERSION="" courbet_defconfig
+        make CC=clang ARCH=arm64 O=out V=1 EXTRAVERSION="" nethunter_defconfig
         make CC=clang LLVM=1 ARCH=arm64 O=out -j4 \
                 HEADER_ARCH=arm64 \
                 SUBARCH=arm64 \

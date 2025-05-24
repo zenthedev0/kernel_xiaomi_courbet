@@ -55,7 +55,7 @@ jobs:
       run: |
         end_time=$(date +%s)
         duration=$((end_time - ${{ steps.timer.outputs.start_time }}))
-        echo "duration_seconds=$duration" >> $GITHUB_OUTPUT
+        echo "duration_formatted=$((duration / 60))m $((duration % 60))s" >> $GITHUB_OUTPUT
 
     - name: Get kernel version
       id: kernel_version
@@ -76,7 +76,7 @@ jobs:
 
        # Create release dir and copy files (update paths if needed)
        mkdir -p kernel_release
-       cp out/arch/arm64/boot/Image.gz out/arch/arm64/boot/dtb.img out/arch/arm64/boot/dtbo.img kernel_release/ || true
+       cp out/arch/arm64/boot/Image.gz-dtb out/arch/arm64/boot/dtb.img out/arch/arm64/boot/dtbo.img kernel_release/ || true
 
        # Create tarball
        zip -r A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip kernel_release/

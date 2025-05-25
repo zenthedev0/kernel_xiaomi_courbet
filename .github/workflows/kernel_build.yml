@@ -6,6 +6,7 @@ on:
 env:
   KBUILD_BUILD_USER: Giyokun07
   KBUILD_BUILD_HOST: Desktop
+  LOCALVERSION: ""
 
 jobs:
   build:
@@ -50,12 +51,18 @@ jobs:
                 CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                 CLANG_TRIPLE=aarch64-linux-gnu-
 
-    - name: Calculate build duration
-      id: duration
+    - name: Prepare Telegram message data
+      id: telegram_data
       run: |
+        # Get current timestamp for message
+        echo "built_at=$(date +'%Y/%m/%d %H:%M')" >> $GITHUB_OUTPUT
+        
+        # Calculate duration in "Xm Ys" format
         end_time=$(date +%s)
         duration=$((end_time - ${{ steps.timer.outputs.start_time }}))
-        echo "duration_formatted=$((duration / 60))m $((duration % 60))s" >> $GITHUB_OUTPUT
+        minutes=$((duration / 60))
+        seconds=$((duration % 60))
+        echo "duration_xm_ys=${minutes}m ${seconds}s" >> $GITHUB_OUTPUT
 
     - name: Get kernel version
       id: kernel_version
@@ -71,20 +78,20 @@ jobs:
 
     - name: Find and package kernel files
       run: |
-       # Debug: List all relevant files
-       find out/ -type f \( -name "Image.gz-dtb" -o -name "dtb.img" -o -name "dtbo.img" \) -exec echo "Found: {}" \;
+        # Debug: List all relevant files
+        find out/ -type f \( -name "Image.gz-dtb" -o -name "dtb.img" -o -name "dtbo.img" \) -exec echo "Found: {}" \;
 
-       # Create release dir and copy files (update paths if needed)
-       mkdir -p kernel_release
-       cp out/arch/arm64/boot/Image.gz-dtb out/arch/arm64/boot/dtb.img out/arch/arm64/boot/dtbo.img kernel_release/ || true
+        # Create release dir and copy files
+        mkdir -p kernel_release
+        cp out/arch/arm64/boot/Image.gz-dtb out/arch/arm64/boot/dtb.img out/arch/arm64/boot/dtbo.img kernel_release/ || true
 
-       # Create tarball
-       zip -r A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip kernel_release/
+        # Create ZIP file
+        zip -r A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip kernel_release/
 
-       # Verify the tarball exists
-       ls -lh A15-KSU-courbet-*.zip
+        # Verify the ZIP exists
+        ls -lh A15-KSU-courbet-*.zip
 
-    - name: Upload artifact (for GitHub)
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: kernel-build
@@ -99,7 +106,7 @@ jobs:
         message: |
           ✅ Kernel Build Success!
           🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
-          🕒 Built at: ${{ steps.date.outputs.formatted_date }}
-          ⏱ Duration: ${{ steps.duration.outputs.duration_seconds }} seconds
+          🕒 Built at: ${{ steps.telegram_data.outputs.built_at }}
+          ⏱ Duration: ${{ steps.telegram_data.outputs.duration_xm_ys }}
           🔨 Commit: ${{ steps.commit.outputs.commit_short }}
         document: A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip

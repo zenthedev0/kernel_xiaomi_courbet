@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
 env:
-  KBUILD_BUILD_USER: Giyokun07
-  KBUILD_BUILD_HOST: Desktop
+  KBUILD_BUILD_USER: zenthedev0
+  KBUILD_BUILD_HOST: ci_project
   LOCALVERSION: ""
 
 jobs:
@@ -106,7 +106,5 @@ jobs:
         message: |
           ✅ Kernel Build Success!
           🔧 Version: ${{ steps.kernel_version.outputs.kernel_version }}
-          🕒 Built at: ${{ steps.telegram_data.outputs.built_at }}
-          ⏱ Duration: ${{ steps.telegram_data.outputs.duration_xm_ys }}
           🔨 Commit: ${{ steps.commit.outputs.commit_short }}
         document: A15-KSU-courbet-${{ steps.timestamp.outputs.formatted_date }}-${{ steps.timestamp.outputs.formatted_time }}.zip

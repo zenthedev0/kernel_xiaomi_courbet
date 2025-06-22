@@ -5,17 +5,16 @@ sudo apt-get update
 sudo apt-get install -y clang llvm lld build-essential bc libncurses-dev bison flex libssl-dev libelf-dev
 
 # Export build environment variables
-export KBUILD_BUILD_USER=Giyokun07
-export KBUILD_BUILD_HOST=Dekstop
+export KBUILD_BUILD_USER=zencompiler
+export KBUILD_BUILD_HOST=WIN
 echo $KBUILD_BUILD_USER
 echo $KBUILD_BUILD_HOST
-export LOCALVERSION="-RedLabel"
 echo -e "done?"
 sleep 2s
 
 # Run kernel build steps
 make CC=clang ARCH=arm64 O=out V=1 EXTRAVERSION="" courbet_defconfig
-make CC=clang LLVM=1 ARCH=arm64 O=out -j16 \
+make CC=clang LLVM=1 ARCH=arm64 O=out -j$(nproc) \
         HEADER_ARCH=arm64 \
         SUBARCH=arm64 \
         CXX=c++ \

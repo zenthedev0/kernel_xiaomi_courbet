@@ -18,7 +18,7 @@ echo -e "done?"
 sleep 2s
 
 # Run kernel build steps
-make CC=clang ARCH=arm64 O=out V=1 EXTRAVERSION="" courbet_defconfig
+make CC=clang ARCH=arm64 O=out V=1 EXTRAVERSION="" nethunter_defconfig
 make CC=clang LLVM=1 ARCH=arm64 O=out -j$(nproc) \
         HEADER_ARCH=arm64 \
         SUBARCH=arm64 \
